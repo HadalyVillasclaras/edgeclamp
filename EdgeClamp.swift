@@ -73,7 +73,7 @@ func buildEventMask() -> CGEventMask {
 
 func main() {
   if !AXIsProcessTrusted() {
-    print("EdgeClamp: falta permiso de Accesibilidad")
+    print("EdgeClamp: Accessibility permission is required.")
     exit(1)
   }
 
@@ -87,7 +87,7 @@ func main() {
   )
 
   guard let tap = eventTap else {
-    print("EdgeClamp: no se pudo crear el event tap")
+    print("EdgeClamp: Failed to create event tap.")
     exit(2)
   }
 
@@ -95,7 +95,7 @@ func main() {
   CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
   CGEvent.tapEnable(tap: tap, enable: true)
 
-  print("EdgeClamp corriendo. Bloqueo arriba \(Int(topPadding))px. SHIFT para permitir la barra.")
+  print("EdgeClamp is running. Top edge is clamped (\(Int(topPadding))px). Hold SHIFT to temporarily allow access.")
   CFRunLoopRun()
 }
 
