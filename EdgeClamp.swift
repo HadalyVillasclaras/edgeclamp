@@ -2,12 +2,14 @@ import Cocoa
 import CoreGraphics
 
 let topPadding: CGFloat = 40
-let warpOffset: CGFloat = 2
+let bottomPadding: CGFloat = 40
+let warpOffset: CGFloat = 18
 let allowShiftBypass = true
 
 final class EdgeClamp {
   private var eventTap: CFMachPort?
-  private var isWarping = false
+  private var lastWarpTime: CFAbsoluteTime = 0
+  private let warpCooldown: CFAbsoluteTime = 0.006
 
   func start() {
     if !AXIsProcessTrusted() {
@@ -22,8 +24,8 @@ final class EdgeClamp {
       (1 << CGEventType.otherMouseDragged.rawValue)
 
     let callback: CGEventTapCallBack = { proxy, type, event, userInfo in
-      let unmanaged = Unmanaged<EdgeClamp>.fromOpaque(userInfo!).takeUnretainedValue()
-      return unmanaged.handleEvent(proxy: proxy, type: type, event: event)
+      let instance = Unmanaged<EdgeClamp>.fromOpaque(userInfo!).takeUnretainedValue()
+      return instance.handleEvent(proxy: proxy, type: type, event: event)
     }
 
     eventTap = CGEvent.tapCreate(
@@ -51,13 +53,13 @@ final class EdgeClamp {
       exit(0)
     }
 
-    print("EdgeClamp is running. Top edge is clamped (\(Int(topPadding))px). Hold SHIFT to temporarily allow access.")
+    print("EdgeClamp is running. Top and bottom edges are clamped (\(Int(topPadding))px / \(Int(bottomPadding))px). Hold SHIFT to temporarily allow access.")
     CFRunLoopRun()
   }
 
   private func screenFrame(for point: CGPoint) -> CGRect {
     for screen in NSScreen.screens {
-      if screen.frame.insetBy(dx: -1, dy: -1).contains(point) { return screen.frame }
+      if screen.frame.insetBy(dx: -2, dy: -2).contains(point) { return screen.frame }
     }
     return NSScreen.main?.frame ?? .zero
   }
@@ -88,11 +90,6 @@ final class EdgeClamp {
       return Unmanaged.passUnretained(event)
     }
 
-    if isWarping {
-      isWarping = false
-      return Unmanaged.passUnretained(event)
-    }
-
     let p = event.location
     let frame = screenFrame(for: p)
     if frame.height <= 0 {
@@ -100,12 +97,29 @@ final class EdgeClamp {
     }
 
     let topZoneMaxY = frame.minY + topPadding
+    let bottomZoneMinY = frame.maxY - bottomPadding
+
+    let now = CFAbsoluteTimeGetCurrent()
+    if now - lastWarpTime < warpCooldown {
+      return Unmanaged.passUnretained(event)
+    }
 
     if p.y <= topZoneMaxY {
-      isWarping = true
+      lastWarpTime = now
+      let targetY = topZoneMaxY + warpOffset
       CGAssociateMouseAndMouseCursorPosition(0)
-      CGWarpMouseCursorPosition(CGPoint(x: p.x, y: topZoneMaxY + warpOffset))
+      CGWarpMouseCursorPosition(CGPoint(x: p.x, y: targetY))
       CGAssociateMouseAndMouseCursorPosition(1)
+      return Unmanaged.passUnretained(event)
+    }
+
+    if p.y >= bottomZoneMinY {
+      lastWarpTime = now
+      let targetY = bottomZoneMinY - warpOffset
+      CGAssociateMouseAndMouseCursorPosition(0)
+      CGWarpMouseCursorPosition(CGPoint(x: p.x, y: targetY))
+      CGAssociateMouseAndMouseCursorPosition(1)
+      return Unmanaged.passUnretained(event)
     }
 
     return Unmanaged.passUnretained(event)
