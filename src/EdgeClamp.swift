@@ -1,11 +1,6 @@
 import Cocoa
 import CoreGraphics
 
-let topPadding: CGFloat = 40
-let bottomPadding: CGFloat = 40
-let warpOffset: CGFloat = 18
-let allowShiftBypass = true
-
 final class EdgeClamp {
   private var eventTap: CFMachPort?
   private var lastWarpTime: CFAbsoluteTime = 0
@@ -138,5 +133,3 @@ final class EdgeClamp {
 
   static let shared = EdgeClamp()
 }
-
-EdgeClamp.shared.start()
