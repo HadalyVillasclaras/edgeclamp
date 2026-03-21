@@ -1,109 +1,58 @@
 # EdgeClamp
 
-EdgeClamp is a lightweight macOS utility that prevents the mouse cursor from reaching the top edge of the screen.
+EdgeClamp is a small macOS utility that prevents the mouse cursor from reaching the top and bottom edges of the screen. It was created as a lightweight workaround to simulate a **kiosk-like environment** where the menu bar or Dock should not be accessible during interaction.
 
-It is designed for kiosk setups, installations, exhibitions, and public-facing environments where triggering the macOS menu bar must be avoided.
-
-When the cursor enters the top edge zone, EdgeClamp repositions it slightly downward, preventing the system UI from appearing.
-
-Holding `SHIFT` temporarily disables the clamp.
+This tool runs in the background and clamps the cursor position when it approaches restricted screen edges.
 
 ---
 
-## What It Does
+## What it does
 
-- Monitors global mouse movement  
-- Detects when the cursor enters the top screen edge  
-- Repositions the cursor to prevent menu bar activation  
-- Allows temporary bypass by holding `SHIFT`  
-- Supports multi-monitor setups  
-
-EdgeClamp does not modify system settings and does not disable system features.  
-It only adjusts cursor position in real time.
+- Blocks cursor access to the top screen edge
+- Blocks cursor access to the bottom screen edge
+- Allows temporary bypass while holding **Shift**
+- Runs as a minimal background executable
+- Designed for kiosk-style setups or controlled installations
 
 ---
 
-## Requirements
+## Running the app
 
-- macOS  
-- Swift (preinstalled on macOS)  
-- Accessibility permission  
-- Input Monitoring permission  
+An executable file is already included in the repository:
 
----
+`EdgeClamp`
 
-## Installation
-
-Clone or download the repository, then compile:
-
-```bash
-swiftc EdgeClamp.swift -o EdgeClamp
-```
+Double-click it to start the utility.
 
 ---
 
-## Permissions (Required)
+## Updating after editing the code
 
-Before running, grant permissions:
+If you modify the source files, rebuild the executable with:
 
-**System Settings → Privacy & Security**
+`./build.sh`
 
-Enable:
-
-- Accessibility → Terminal (or the compiled binary)
-- Input Monitoring → Terminal (or the compiled binary)
-
-Then fully quit and reopen Terminal.
+This regenerates the `EdgeClamp` executable using the latest code.
 
 ---
 
-## Running
+## Configuration
 
-```bash
-./EdgeClamp
-```
+Basic behavior can be adjusted inside:
 
-You should see:
+`Sources/EdgeClamp/Constants.swift`
 
-```
-EdgeClamp is running. Top edge is clamped (40px). Hold SHIFT to temporarily allow access.
-```
+Available settings include:
 
-The process will remain active until interrupted.
-
-To stop:
-
-```
-Ctrl + C
-```
+- top edge padding
+- bottom edge padding
+- warp offset
+- Shift-key bypass toggle
 
 ---
 
-## Behavior
+## Why this exists
 
-- The top edge is clamped within a fixed pixel zone (`topPadding`)  
-- When the cursor enters this zone, it is repositioned downward  
-- Holding `SHIFT` disables the clamp temporarily  
-- Works across multiple screens  
+macOS does not provide a simple built-in kiosk mode for custom web or installation environments without additional tooling or system configuration.
 
----
-
-## Use Cases
-
-EdgeClamp is intended for:
-
-- Kiosk environments  
-- Interactive installations  
-- Exhibitions  
-- Museum setups  
-- Dedicated single-app macOS systems  
-
-It pairs well with Chrome `--kiosk` mode or other fullscreen applications.
-
----
-
-## Notes
-
-EdgeClamp operates using a global event tap and cursor repositioning.  
-It does not alter system configuration.  
-It must remain running to function.
+EdgeClamp provides a minimal workaround by preventing the cursor from reaching system UI edges, allowing controlled fullscreen interaction setups without modifying the operating system.
